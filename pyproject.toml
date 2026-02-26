@@ -1,0 +1,18 @@
+[project]
+name = "kana-rate"
+version = "0.1.0"
+description = "Compute kana-per-minute from subtitle files using Japanese reading conversion."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pysrt==1.1.2",
+  "sudachipy==0.6.8",
+  "sudachidict-core==20240109",
+]
+
+[project.scripts]
+kana-rate = "kana_rate.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
