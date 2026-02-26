@@ -15,14 +15,11 @@ Compute **kana-per-minute** from subtitle files using Japanese reading conversio
 ## Quickstart (uv)
 ```bash
 cd kana-rate
-uv venv
-uv pip install -e .
-
 # Analyze a directory (all .srt first, else .ass)
-uv run kana-rate ./subtitles
+uv run src/kana_rate/cli.py ./subtitles
 
 # Analyze a single file
-uv run kana-rate ./file.srt
+uv run src/kana_rate/cli.py ./file.srt
 ```
 
 ## Usage
@@ -31,6 +28,7 @@ kana-rate <path>
 ```
 - `<path>` can be a file or a directory.
 - If `<path>` is a directory, the tool processes all `.srt` files first. If no `.srt` are found, it falls back to `.ass`.
+- If you are not installing the package, run `uv run src/kana_rate/cli.py <path>` instead.
 
 Output format:
 ```
@@ -65,10 +63,7 @@ TOTAL\t<kana_count> kana\t<minutes> min\t<rate> kana/min
 - Merged duration is computed in milliseconds and converted to minutes.
 
 ## Troubleshooting
-- If SudachiPy dictionary is missing, reinstall deps:
-  ```bash
-  uv pip install -e .
-  ```
+- If SudachiPy dictionary is missing, ensure dependencies are available in your environment.
 - If parsing fails on unusual ASS files, check the `[Events]` section formatting.
 
 ## License

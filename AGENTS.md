@@ -10,12 +10,10 @@
 
 ## Build, Test, and Development Commands
 Use `uv` (recommended) for a local environment:
-- `uv venv` creates a virtual environment in `.venv`.
-- `uv pip install -e .` installs the project in editable mode.
-- `uv run kana-rate /path/to/subtitles` runs the CLI on a directory.
-- `uv run kana-rate /path/to/file.srt` runs the CLI on a single file.
+- `uv run src/kana_rate/cli.py ./subtitles` runs the CLI on a directory.
+- `uv run src/kana_rate/cli.py ./file.srt` runs the CLI on a single file.
 
-Packaging is handled by `setuptools` per `pyproject.toml`. If you need a build artifact, install `build` and run `python -m build`.
+Packaging is handled by `setuptools` per `pyproject.toml`. If you need a build artifact, use the `build` package in your environment.
 
 ## Coding Style & Naming Conventions
 - Python 3.10+ only.
@@ -35,5 +33,5 @@ Packaging is handled by `setuptools` per `pyproject.toml`. If you need a build a
 - PRs should include a summary, how to run/verify changes, and any new CLI output examples when behavior changes.
 
 ## Configuration Notes
-- SudachiPy requires a dictionary; if lookups fail, reinstall dependencies with `uv pip install -e .`.
+- SudachiPy requires a dictionary; if lookups fail, ensure dependencies are available in your environment.
 - The CLI expects `.srt` or `.ass` inputs; directory mode prefers `.srt` and falls back to `.ass`.
