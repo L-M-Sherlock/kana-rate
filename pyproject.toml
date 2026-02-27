@@ -1,5 +1,5 @@
 [project]
-name = "kana-rate"
+name = "jp-sub-speechrate"
 version = "0.1.0"
 description = "Compute kana-per-minute from subtitle files using Japanese reading conversion."
 readme = "README.md"
@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-kana-rate = "kana_rate.cli:main"
+jsub-rate = "kana_rate.cli:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

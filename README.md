@@ -1,4 +1,4 @@
-# kana-rate
+# jp-sub-speechrate
 
 Compute **kana-per-minute** from subtitle files using Japanese reading conversion. This tool converts kanji to kana (via SudachiPy) before counting, so the rate reflects spoken Japanese rather than just visible kana.
 
@@ -24,7 +24,7 @@ uv run src/kana_rate/cli.py ./file.srt
 
 ## Usage
 ```
-kana-rate <path> [--kana] [--include-outliers]
+jsub-rate <path> [--kana] [--include-outliers]
 ```
 - `<path>` can be a file or a directory.
 - If `<path>` is a directory, the tool processes all `.srt` files first. If no `.srt` are found, it falls back to `.ass`.

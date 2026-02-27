@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 - `src/kana_rate/` contains the application code.
-  - `cli.py` is the CLI entry point (`kana-rate`).
+- `cli.py` is the CLI entry point (`jsub-rate`).
   - `parsing.py` handles subtitle parsing and time merging.
   - `reading.py` converts text to kana via SudachiPy.
 - No `tests/` directory exists yet.
