@@ -12,14 +12,14 @@ def _analyze_items(items, reader: KanaReader, use_mora: bool):
     for start, end, text in items:
         if not text.strip():
             continue
+        text = strip_nonspoken(text)
+        if not text.strip():
+            continue
         texts.append(text)
         intervals.append((start, end))
 
     total_units = 0
     for text in texts:
-        text = strip_nonspoken(text)
-        if not text.strip():
-            continue
         reading = reader.to_kana(text)
         if use_mora:
             total_units += reader.count_mora(reading)
