@@ -99,13 +99,27 @@ def merge_intervals(intervals: Iterable[Tuple[int, int]]) -> List[Tuple[int, int
     return [(s, e) for s, e in merged]
 
 
+def merge_duplicate_items(items: Iterable[Tuple[int, int, str]]) -> List[Tuple[int, int, str]]:
+    merged = []
+    for start, end, text in sorted(items, key=lambda x: (x[0], x[1])):
+        if not merged:
+            merged.append([start, end, text])
+            continue
+        last = merged[-1]
+        if text == last[2] and start <= last[1]:
+            last[1] = max(last[1], end)
+            continue
+        merged.append([start, end, text])
+    return [(s, e, t) for s, e, t in merged]
+
+
 def parse_srt(path: str) -> List[Tuple[int, int, str]]:
     subs = pysrt.open(path)
     items = []
     for sub in subs:
         text = clean_text(sub.text or "")
         items.append((sub.start.ordinal, sub.end.ordinal, text))
-    return items
+    return merge_duplicate_items(items)
 
 
 def _parse_ass_time(ts: str) -> int:
@@ -161,4 +175,4 @@ def parse_ass(path: str) -> List[Tuple[int, int, str]]:
                 text = clean_text(fields[idx_text])
                 items.append((start, end, text))
 
-    return items
+    return merge_duplicate_items(items)
