@@ -66,5 +66,8 @@ TOTAL\t<kana_count> kana\t<minutes> min\t<rate> kana/min
 - If SudachiPy dictionary is missing, ensure dependencies are available in your environment.
 - If parsing fails on unusual ASS files, check the `[Events]` section formatting.
 
+## TODO
+- Allow halfwidth katakana (e.g., `ｶﾀｶﾅ`, `ﾊﾟﾝ`, `ｰ`) to pass preprocessing so they are counted correctly.
+
 ## License
 This project is a utility script intended for internal use. Add a license if you plan to distribute it.
