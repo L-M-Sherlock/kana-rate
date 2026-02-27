@@ -44,6 +44,29 @@ def _episode_rate(items, reader: KanaReader, unit: str) -> float:
     return (total / minutes) if minutes > 0 else 0.0
 
 
+def _line_rates(items, reader: KanaReader, unit: str) -> list[float]:
+    rates: list[float] = []
+    for start, end, text in items:
+        if not text.strip():
+            continue
+        text = strip_nonspoken(text)
+        if not text.strip():
+            continue
+        duration_ms = end - start
+        if duration_ms <= 0:
+            continue
+        reading = reader.to_kana(text)
+        if unit == "mora":
+            count = reader.count_mora(reading)
+        else:
+            count = reader.count_kana(reading)
+        if count <= 0:
+            continue
+        rate = count / (duration_ms / 1000.0 / 60.0)
+        rates.append(rate)
+    return rates
+
+
 def _collect_show_dirs(root: Path, exclude_subtitle_backup: bool) -> list[Path]:
     exts = {".srt", ".ass"}
     dirs = set()
@@ -74,14 +97,20 @@ def main():
         help="Rate unit to compute (default: mora)",
     )
     parser.add_argument(
+        "--granularity",
+        choices=["episode", "line"],
+        default="episode",
+        help="Distribution granularity: per episode or per subtitle line (default: episode)",
+    )
+    parser.add_argument(
         "--include-subtitle-backup",
         action="store_true",
         help="Include SubtitleBackup folders",
     )
     parser.add_argument(
         "--out",
-        default="rate_distributions.png",
-        help="Output image path (default: rate_distributions.png)",
+        default="rate_distributions",
+        help="Output directory for per-show images (default: rate_distributions)",
     )
     args = parser.parse_args()
 
@@ -94,17 +123,18 @@ def main():
     reader = KanaReader()
 
     show_rates: dict[str, list[float]] = {}
-    all_episode_rates: list[float] = []
     for d in show_dirs:
         rates = []
         for fname in sorted(d.iterdir()):
             if fname.suffix.lower() not in (".srt", ".ass"):
                 continue
             items = _parse_items(fname)
-            rate = _episode_rate(items, reader, args.unit)
-            if rate > 0:
-                rates.append(rate)
-                all_episode_rates.append(rate)
+            if args.granularity == "episode":
+                rate = _episode_rate(items, reader, args.unit)
+                if rate > 0:
+                    rates.append(rate)
+            else:
+                rates.extend(_line_rates(items, reader, args.unit))
         if rates:
             show_rates[d.name] = rates
 
@@ -112,26 +142,29 @@ def main():
         print("No valid subtitle entries found.")
         return
 
-    shows = list(show_rates.keys())
-    data = [show_rates[s] for s in shows]
-
     plt.rcParams["font.family"] = "Hiragino Sans"
-    fig, axes = plt.subplots(2, 1, figsize=(max(10, len(shows) * 0.6), 10), constrained_layout=True)
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    axes[0].boxplot(data, tick_labels=shows, showfliers=False)
-    axes[0].set_title(f"Per-Show {args.unit.upper()}/min Distribution (episodes)")
-    axes[0].set_ylabel(f"{args.unit}/min")
-    axes[0].tick_params(axis="x", rotation=45, labelsize=8)
+    def safe_name(name: str) -> str:
+        # Preserve Unicode (including CJK). Only replace path-unsafe characters.
+        return "".join("_" if ch in ("/", "\0", ":") else ch for ch in name).strip()
 
-    axes[1].hist(all_episode_rates, bins=30)
-    axes[1].set_title(f"Per-Episode {args.unit.upper()}/min Distribution (all shows)")
-    axes[1].set_xlabel(f"{args.unit}/min")
-    axes[1].set_ylabel("Episode count")
-
-    out_path = Path(args.out)
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=150)
-    print(f"Wrote {out_path}")
+    for show, rates in show_rates.items():
+        fig, ax = plt.subplots(1, 1, figsize=(8, 4), constrained_layout=True)
+        ax.hist(rates, bins=20)
+        if args.granularity == "episode":
+            subtitle = f"{len(rates)} eps"
+        else:
+            subtitle = f"{len(rates)} lines"
+        ax.set_title(f"{show} ({subtitle}) - {args.unit}/min distribution")
+        ax.set_xlabel(f"{args.unit}/min")
+        ax.set_ylabel("Episode count")
+        filename = safe_name(show) + f"_{args.unit}_{args.granularity}.png"
+        out_path = out_dir / filename
+        fig.savefig(out_path, dpi=150)
+        plt.close(fig)
+        print(f"Wrote {out_path}")
 
 
 if __name__ == "__main__":
