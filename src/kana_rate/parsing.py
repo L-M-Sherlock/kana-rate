@@ -9,6 +9,7 @@ BRACKET_SEG_RE = re.compile(r"(\([^\)]*\)|（[^）]*）|\[[^\]]*\]|【[^】]*】
 ONLY_BRACKETS_RE = re.compile(r"^\s*(?:" + BRACKET_SEG_RE.pattern + r"\s*)+$")
 PREFIX_BRACKET_RE = re.compile(r"^\s*" + BRACKET_SEG_RE.pattern + r"\s*")
 MUSIC_ONLY_RE = re.compile(r"^[\s♪～〜ー—…・･]+$")
+KANA_ONLY_RE = re.compile(r"^[\u3040-\u309F\u30A0-\u30FFー・･\s]+$")
 CUE_WORDS = [
     "BGM",
     "SE",
@@ -68,7 +69,12 @@ def strip_nonspoken(text: str) -> str:
         # Drop bracketed segments that look like SFX or non-spoken cues.
         def _strip_cue(match: re.Match) -> str:
             seg = match.group(0)
-            return "" if CUE_RE.search(seg) else seg
+            inner = seg[1:-1].strip()
+            if CUE_RE.search(seg):
+                return ""
+            if inner and KANA_ONLY_RE.match(inner):
+                return ""
+            return seg
 
         line = BRACKET_SEG_RE.sub(_strip_cue, line).strip()
         if not line:

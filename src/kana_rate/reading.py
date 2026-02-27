@@ -46,8 +46,10 @@ class KanaReader:
         text = _jiten_preprocess(text)
         for token in self._tokenizer.tokenize(text, self._mode):
             pos = token.part_of_speech()
-            # Jiten strips ASCII spaces before Sudachi; keep full-width spaces.
-            if pos and pos[0] == "空白" and token.surface() in (" ", "\t"):
+            # Skip whitespace tokens (including full-width space) before counting.
+            if pos and pos[0] == "空白":
+                continue
+            if pos and pos[0] in ("記号", "補助記号"):
                 continue
             reading = token.reading_form()
             if reading == "*":
