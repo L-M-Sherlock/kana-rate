@@ -6,7 +6,7 @@ from .parsing import merge_intervals, parse_ass, parse_srt, strip_nonspoken
 from .reading import KanaReader
 
 
-def _analyze_items(items, reader: KanaReader):
+def _analyze_items(items, reader: KanaReader, use_mora: bool):
     texts = []
     intervals = []
     for start, end, text in items:
@@ -20,8 +20,11 @@ def _analyze_items(items, reader: KanaReader):
         text = strip_nonspoken(text)
         if not text.strip():
             continue
-        kana_text = reader.to_kana(text)
-        kana_total += reader.count_kana(kana_text)
+        reading = reader.to_kana(text)
+        if use_mora:
+            kana_total += reader.count_mora(reading)
+        else:
+            kana_total += reader.count_kana(reading)
 
     merged = merge_intervals(intervals)
     total_ms = sum(e - s for s, e in merged)
@@ -44,6 +47,7 @@ def _collect_files(path: str):
 def main():
     parser = argparse.ArgumentParser(description="Compute kana-per-minute from subtitles.")
     parser.add_argument("path", help="Subtitle file or directory")
+    parser.add_argument("--mora", action="store_true", help="Compute mora-per-minute instead of kana-per-minute")
     args = parser.parse_args()
 
     files = _collect_files(args.path)
@@ -61,13 +65,15 @@ def main():
             items = parse_srt(path)
         else:
             items = parse_ass(path)
-        kana, minutes, rate = _analyze_items(items, reader)
+        kana, minutes, rate = _analyze_items(items, reader, args.mora)
         total_kana += kana
         total_minutes += minutes
-        print(f"{os.path.basename(path)}\t{kana} kana\t{minutes:.2f} min\t{rate:.2f} kana/min")
+        unit = "mora" if args.mora else "kana"
+        print(f"{os.path.basename(path)}\t{kana} {unit}\t{minutes:.2f} min\t{rate:.2f} {unit}/min")
 
     total_rate = (total_kana / total_minutes) if total_minutes > 0 else 0.0
-    print(f"TOTAL\t{total_kana} kana\t{total_minutes:.2f} min\t{total_rate:.2f} kana/min")
+    unit = "mora" if args.mora else "kana"
+    print(f"TOTAL\t{total_kana} {unit}\t{total_minutes:.2f} min\t{total_rate:.2f} {unit}/min")
 
 
 if __name__ == "__main__":
