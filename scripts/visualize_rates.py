@@ -6,8 +6,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from kana_rate.parsing import merge_intervals, parse_ass, parse_srt, strip_nonspoken
-from kana_rate.reading import KanaReader
+from jp_sub_speechrate.parsing import merge_intervals, parse_ass, parse_srt, strip_nonspoken
+from jp_sub_speechrate.reading import KanaReader
 
 
 def _parse_items(path: Path):

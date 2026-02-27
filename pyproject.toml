@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-jsub-rate = "kana_rate.cli:main"
+jsub-rate = "jp_sub_speechrate.cli:main"
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

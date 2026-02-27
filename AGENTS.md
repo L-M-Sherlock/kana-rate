@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/kana_rate/` contains the application code.
+- `src/jp_sub_speechrate/` contains the application code.
 - `cli.py` is the CLI entry point (`jsub-rate`).
   - `parsing.py` handles subtitle parsing and time merging.
   - `reading.py` converts text to kana via SudachiPy.
@@ -10,8 +10,8 @@
 
 ## Build, Test, and Development Commands
 Use `uv` (recommended) for a local environment:
-- `uv run src/kana_rate/cli.py ./subtitles` runs the CLI on a directory.
-- `uv run src/kana_rate/cli.py ./file.srt` runs the CLI on a single file.
+- `uv run src/jp_sub_speechrate/cli.py ./subtitles` runs the CLI on a directory.
+- `uv run src/jp_sub_speechrate/cli.py ./file.srt` runs the CLI on a single file.
 - Output is mora/min by default; pass `--kana` for kana/min.
 - Per-line outliers are trimmed by default; pass `--include-outliers` to keep them.
 
@@ -20,7 +20,7 @@ Packaging is handled by `setuptools` per `pyproject.toml`. If you need a build a
 ## Coding Style & Naming Conventions
 - Python 3.10+ only.
 - Follow PEP 8 with 4-space indentation.
-- Use `snake_case` for functions and modules (e.g., `kana_rate`, `parse_ass`).
+- Use `snake_case` for functions and modules (e.g., `jp_sub_speechrate`, `parse_ass`).
 - Keep CLI-facing behavior in `cli.py`, and put parsing/conversion logic in `parsing.py` or `reading.py`.
 - No formatter or linter is configured yet; keep changes small and consistent with existing style.
 

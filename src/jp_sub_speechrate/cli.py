@@ -1,9 +1,17 @@
 import argparse
 import glob
 import os
+import sys
 
-from .parsing import merge_intervals, parse_ass, parse_srt, strip_nonspoken
-from .reading import KanaReader
+try:
+    from .parsing import merge_intervals, parse_ass, parse_srt, strip_nonspoken
+    from .reading import KanaReader
+except ImportError:
+    # Allow running as a script: `uv run src/jp_sub_speechrate/cli.py ...`
+    pkg_dir = os.path.dirname(__file__)
+    sys.path.insert(0, os.path.dirname(pkg_dir))
+    from jp_sub_speechrate.parsing import merge_intervals, parse_ass, parse_srt, strip_nonspoken
+    from jp_sub_speechrate.reading import KanaReader
 
 
 def _percentile(sorted_vals: list[float], p: float) -> float:

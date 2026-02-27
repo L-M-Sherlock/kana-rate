@@ -16,10 +16,10 @@ Compute **mora-per-minute** from subtitle files using Japanese reading conversio
 ```bash
 cd kana-rate
 # Analyze a directory (all .srt first, else .ass)
-uv run src/kana_rate/cli.py ./subtitles
+uv run src/jp_sub_speechrate/cli.py ./subtitles
 
 # Analyze a single file
-uv run src/kana_rate/cli.py ./file.srt
+uv run src/jp_sub_speechrate/cli.py ./file.srt
 ```
 
 ## Usage
@@ -28,7 +28,7 @@ jsub-rate <path> [--kana] [--include-outliers]
 ```
 - `<path>` can be a file or a directory.
 - If `<path>` is a directory, the tool processes all `.srt` files first. If no `.srt` are found, it falls back to `.ass`.
-- If you are not installing the package, run `uv run src/kana_rate/cli.py <path>` instead.
+- If you are not installing the package, run `uv run src/jp_sub_speechrate/cli.py <path>` instead.
 - By default the tool reports **mora/min**. Use `--kana` to report kana/min instead.
 - By default per-line rate outliers are trimmed (IQR). Use `--include-outliers` to keep them.
 
@@ -73,7 +73,7 @@ uv run python scripts/visualize_rates.py --root /path/to/subtitles --out rate_di
 
 ## Files and structure
 ```
-./src/kana_rate/
+./src/jp_sub_speechrate/
   cli.py        # CLI entry point
   parsing.py    # subtitle parsing and time merging
   reading.py    # SudachiPy conversion to kana
