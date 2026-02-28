@@ -128,26 +128,38 @@ def main():
     for d in show_dirs:
         total_units = 0
         total_minutes = 0.0
+        episode_rates = []
         for fname in sorted(d.iterdir()):
             if fname.suffix.lower() not in (".srt", ".ass"):
                 continue
             items = _parse_items(fname)
-            units, minutes, _ = _analyze_items(items, reader, args.unit, trim_outliers)
+            units, minutes, rate = _analyze_items(items, reader, args.unit, trim_outliers)
             total_units += units
             total_minutes += minutes
+            if minutes > 0:
+                episode_rates.append(rate)
         if total_minutes > 0:
             rate = total_units / total_minutes
-            rows.append((d.name, total_units, total_minutes, rate))
+            if episode_rates:
+                episode_rates.sort()
+                mid = len(episode_rates) // 2
+                if len(episode_rates) % 2 == 1:
+                    median_rate = episode_rates[mid]
+                else:
+                    median_rate = (episode_rates[mid - 1] + episode_rates[mid]) / 2.0
+            else:
+                median_rate = 0.0
+            rows.append((d.name, total_units, total_minutes, rate, median_rate))
 
     if not rows:
         print("No valid subtitle entries found.")
         return
 
     unit_label = "MORA" if args.unit == "mora" else "SYLLABLE" if args.unit == "syllable" else "KANA"
-    print(f"| DIR | {unit_label} | MIN | RATE |")
-    print("| --- | --- | --- | --- |")
-    for name, units, minutes, rate in sorted(rows, key=lambda r: r[3]):
-        print(f"| {name} | {units} | {minutes:.2f} | {rate:.2f} |")
+    print(f"| DIR | {unit_label} | MIN | RATE | MEDIAN_RATE |")
+    print("| --- | --- | --- | --- | --- |")
+    for name, units, minutes, rate, median_rate in sorted(rows, key=lambda r: r[3]):
+        print(f"| {name} | {units} | {minutes:.2f} | {rate:.2f} | {median_rate:.2f} |")
 
 
 if __name__ == "__main__":
