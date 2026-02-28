@@ -33,21 +33,21 @@ def _percentile(sorted_vals: list[float], p: float) -> float:
     return sorted_vals[f] * (c - k) + sorted_vals[c] * (k - f)
 
 
-def _trim_iqr(values: list[float]) -> list[float]:
+def _trim_iqr(values: list[float]) -> set[float]:
     if len(values) < 4:
-        return values
+        return set(values)
     sorted_vals = sorted(values)
     q1 = _percentile(sorted_vals, 25)
     q3 = _percentile(sorted_vals, 75)
     iqr = q3 - q1
     if iqr <= 0:
-        return values
+        return set(values)
     lower = q1 - 1.5 * iqr
     upper = q3 + 1.5 * iqr
-    return [v for v in values if lower <= v <= upper]
+    return {v for v in values if lower <= v <= upper}
 
 
-def _line_entries(items, reader: KanaReader, unit: str) -> list[tuple[int, int, int, float]]:
+def _line_entries(items, reader: KanaReader, unit: str) -> list[tuple[int, int, int, float, float]]:
     entries = []
     for start, end, text in items:
         if not text.strip():
@@ -69,7 +69,7 @@ def _line_entries(items, reader: KanaReader, unit: str) -> list[tuple[int, int, 
         if count <= 0:
             continue
         rate = count / (duration_ms / 1000.0 / 60.0)
-        entries.append((start, end, count, rate))
+        entries.append((start, end, count, rate, duration_ms / 1000.0))
     return entries
 
 
@@ -97,8 +97,8 @@ def _episode_rate(items, reader: KanaReader, unit: str, trim_outliers: bool) -> 
     return (total / minutes) if minutes > 0 else 0.0
 
 
-def _line_rates(items, reader: KanaReader, unit: str) -> list[float]:
-    return [e[3] for e in _line_entries(items, reader, unit)]
+def _line_rates(items, reader: KanaReader, unit: str) -> list[tuple[float, float]]:
+    return [(e[3], e[4]) for e in _line_entries(items, reader, unit)]
 
 
 def _collect_show_dirs(root: Path, exclude_subtitle_backup: bool) -> list[Path]:
@@ -133,8 +133,13 @@ def main():
     parser.add_argument(
         "--granularity",
         choices=["episode", "line"],
-        default="episode",
-        help="Distribution granularity: per episode or per subtitle line (default: episode)",
+        default="line",
+        help="Distribution granularity: per episode or per subtitle line (default: line)",
+    )
+    parser.add_argument(
+        "--weight-by-duration",
+        action="store_true",
+        help="Weight per-line histograms by subtitle duration (line granularity only)",
     )
     parser.add_argument(
         "--trim-outliers",
@@ -175,9 +180,17 @@ def main():
             else:
                 rates.extend(_line_rates(items, reader, args.unit))
         if rates:
-            if args.granularity == "line" and args.trim_outliers:
-                rates = _trim_iqr(rates)
-            show_rates[d.name] = rates
+            if args.granularity == "line":
+                values = [r for r, _ in rates]
+                weights = [w for _, w in rates]
+                if args.trim_outliers:
+                    value_set = _trim_iqr(values)
+                    filtered = [(r, w) for r, w in rates if r in value_set]
+                    values = [r for r, _ in filtered]
+                    weights = [w for _, w in filtered]
+                show_rates[d.name] = list(zip(values, weights))
+            else:
+                show_rates[d.name] = rates
 
     if not show_rates:
         print("No valid subtitle entries found.")
@@ -193,15 +206,31 @@ def main():
 
     for show, rates in show_rates.items():
         fig, ax = plt.subplots(1, 1, figsize=(8, 4), constrained_layout=True)
-        ax.hist(rates, bins=20)
+        if args.granularity == "line":
+            values = [r for r, _ in rates]
+            weights = [w for _, w in rates] if args.weight_by_duration else None
+            ax.hist(values, bins=20, weights=weights)
+        else:
+            ax.hist(rates, bins=20)
         if args.granularity == "episode":
             subtitle = f"{len(rates)} eps"
         else:
             subtitle = f"{len(rates)} lines"
-        ax.set_title(f"{show} ({subtitle}) - {args.unit}/min distribution")
+        weight_note = ""
+        if args.granularity == "line" and args.weight_by_duration:
+            weight_note = " (time-weighted)"
+        ax.set_title(f"{show} ({subtitle}) - {args.unit}/min distribution{weight_note}")
         ax.set_xlabel(f"{args.unit}/min")
-        ax.set_ylabel("Episode count")
-        filename = safe_name(show) + f"_{args.unit}_{args.granularity}.png"
+        if args.granularity == "episode":
+            ax.set_ylabel("Episode count")
+        elif args.weight_by_duration:
+            ax.set_ylabel("Weighted seconds")
+        else:
+            ax.set_ylabel("Line count")
+        suffix = ""
+        if args.granularity == "line" and args.weight_by_duration:
+            suffix = "_timeweighted"
+        filename = safe_name(show) + f"_{args.unit}_{args.granularity}{suffix}.png"
         out_path = out_dir / filename
         fig.savefig(out_path, dpi=150)
         plt.close(fig)

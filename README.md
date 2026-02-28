@@ -43,9 +43,10 @@ The repository includes a plotting script to visualize rate distributions:
 ```bash
 uv run scripts/visualize_rates.py --root /path/to/subtitles --out rate_distributions_lines --granularity line
 ```
-- Use `--granularity episode` for per-episode distributions.
+- Use `--granularity episode` for per-episode distributions (default is `line`).
 - Add `--trim-outliers` to apply IQR trimming before plotting.
 - Use `--unit kana` or `--unit syllable` to plot alternate units.
+- Add `--weight-by-duration` to weight per-line histograms by subtitle duration.
 
 ## Per-show Summary (Recursive)
 Compute a per-show summary table by scanning a root directory recursively (Markdown output, sorted by rate):
