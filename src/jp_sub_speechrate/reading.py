@@ -71,16 +71,18 @@ class KanaReader:
     @staticmethod
     def count_mora(text: str) -> int:
         count = 0
-        for ch in text:
-            if ch in SMALL_KANA:
-                continue
-            if ch == "ー":
-                continue
-            if ch in ("っ", "ッ"):
-                continue
-            code = ord(ch)
-            if (0x3040 <= code <= 0x309F) or (0x30A0 <= code <= 0x30FF):
+        for unit in KanaReader._mora_units(text):
+            if unit == "ー":
                 count += 1
+                continue
+            if unit in ("っ", "ッ"):
+                count += 1
+                continue
+            for ch in unit:
+                code = ord(ch)
+                if (0x3040 <= code <= 0x309F) or (0x30A0 <= code <= 0x30FF):
+                    count += 1
+                    break
         return count
 
     @staticmethod

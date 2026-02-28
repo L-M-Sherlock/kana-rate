@@ -58,7 +58,7 @@ def _line_entries(items, reader: KanaReader, unit: str) -> list[tuple[int, int, 
         duration_ms = end - start
         if duration_ms <= 0:
             continue
-        strip_sokuon = unit != "syllable"
+        strip_sokuon = unit == "kana"
         reading = reader.to_kana(text, strip_sokuon=strip_sokuon)
         if unit == "mora":
             count = reader.count_mora(reading)

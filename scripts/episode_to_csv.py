@@ -59,7 +59,7 @@ def main():
             duration_ms = end - start
             if duration_ms <= 0:
                 continue
-        strip_sokuon = args.unit != "syllable"
+        strip_sokuon = args.unit == "kana"
         reading = reader.to_kana(cleaned, strip_sokuon=strip_sokuon)
         if args.unit == "mora":
             count = reader.count_mora(reading)

@@ -62,7 +62,6 @@ Use `--unit kana` or `--unit syllable` for alternate units.
 
 ## How the mora count is computed
 **What is a mora?** A mora is a timing unit in Japanese phonology (roughly a beat). For example, small kana combine with the preceding mora: 「きゃ」 counts as 1 mora, so 「きゃく」 is 2 mora (きゃ・く), and 「しゅっぱつ」 is 4 mora (しゅ・っ・ぱ・つ).
-**How this project’s mora differs from the linguistic definition:** we approximate mora counts from Sudachi readings and subtitle timing. This means we count mora from the kana reading after normalization (e.g., symbols/whitespace removed, sokuon stripped, long vowel marks ignored), and we do not model prosody, pauses, or coarticulation. The result is a practical “subtitle mora rate,” not a phonetic ground truth.
 **How syllables are approximated:** syllables are counted by grouping vowel-bearing kana into vowel groups. This collapses long vowels and diphthongs into a single syllable, ignores sokuon (`っ/ッ`), and attaches `ん/ン` to the preceding syllable. For example, 「せんせい」 is treated as 2 syllables (せん・せい) and 「がっこう」 as 2 syllables (がっ・こう).
 1. Subtitle text is cleaned:
    - ASS override tags `{...}` and HTML tags are removed.
@@ -74,10 +73,11 @@ Use `--unit kana` or `--unit syllable` for alternate units.
    - Non-Japanese characters are dropped before tokenization.
 3. SudachiPy converts each line to kana readings (katakana).
    - Whitespace and symbol tokens are ignored.
-   - Sokuon (`っ`/`ッ`) is removed for mora/kana counting.
+   - Sokuon (`っ`/`ッ`) is removed for kana counting (kept for mora/syllable).
 4. Mora are counted from the kana reading.
    - Small kana are treated as part of the preceding mora.
-   - Long vowel mark `ー` is ignored.
+   - Long vowel mark `ー` counts as one mora.
+   - Sokuon (`っ`/`ッ`) counts as one mora.
 5. Subtitle time spans are merged to avoid double-counting overlapping lines.
 6. By default, per-line rate outliers are trimmed (IQR) before computing totals. Use `--include-outliers` to keep them.
 
