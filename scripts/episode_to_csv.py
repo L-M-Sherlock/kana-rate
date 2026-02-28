@@ -59,14 +59,14 @@ def main():
             duration_ms = end - start
             if duration_ms <= 0:
                 continue
-        strip_sokuon = args.unit == "kana"
-        reading = reader.to_kana(cleaned, strip_sokuon=strip_sokuon)
-        if args.unit == "mora":
-            count = reader.count_mora(reading)
-        elif args.unit == "syllable":
-            count = reader.count_syllable(reading)
-        else:
-            count = reader.count_kana(reading)
+            strip_sokuon = args.unit == "kana"
+            reading = reader.to_kana(cleaned, strip_sokuon=strip_sokuon)
+            if args.unit == "mora":
+                count = reader.count_mora(reading)
+            elif args.unit == "syllable":
+                count = reader.count_syllable(reading)
+            else:
+                count = reader.count_kana(reading)
             if count <= 0:
                 continue
             duration_s = duration_ms / 1000.0
