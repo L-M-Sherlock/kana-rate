@@ -8,11 +8,22 @@ TAG_RE = re.compile(r"\{[^}]*\}|<[^>]*>")
 BRACKET_SEG_RE = re.compile(r"(\([^\)]*\)|（[^）]*）|\[[^\]]*\]|【[^】]*】)")
 ONLY_BRACKETS_RE = re.compile(r"^\s*(?:" + BRACKET_SEG_RE.pattern + r"\s*)+$")
 PREFIX_BRACKET_RE = re.compile(r"^\s*" + BRACKET_SEG_RE.pattern + r"\s*")
+LEADING_MARK_RE = re.compile(r"^[\s>＞≫＼/\\📱☎☏♪※＊#]+")
+TRAILING_CONTINUATION_RE = re.compile(r"\s*[→↗↘⇢]+\s*$")
 MUSIC_ONLY_RE = re.compile(r"^[\s♪～〜ー—…・･]+$")
 KANA_ONLY_RE = re.compile(r"^[\u3040-\u309F\u30A0-\u30FFー・･\s]+$")
 CUE_WORDS = [
     "BGM",
     "SE",
+    "男性",
+    "女性",
+    "男子",
+    "女子",
+    "少女",
+    "少年",
+    "声",
+    "ナレーション",
+    "モノローグ",
     "効果音",
     "拍手",
     "歓声",
@@ -54,6 +65,10 @@ def strip_nonspoken(text: str) -> str:
         line = raw_line.strip()
         if not line:
             continue
+        line = LEADING_MARK_RE.sub("", line).strip()
+        line = TRAILING_CONTINUATION_RE.sub("", line).strip()
+        if not line:
+            continue
         if MUSIC_ONLY_RE.match(line):
             continue
         if ONLY_BRACKETS_RE.match(line):
@@ -65,6 +80,7 @@ def strip_nonspoken(text: str) -> str:
             if not m:
                 break
             line = line[m.end() :].lstrip(" 　/／・-–—:：")
+            line = LEADING_MARK_RE.sub("", line).strip()
 
         # Drop bracketed segments that look like SFX or non-spoken cues.
         def _strip_cue(match: re.Match) -> str:
@@ -77,6 +93,7 @@ def strip_nonspoken(text: str) -> str:
             return seg
 
         line = BRACKET_SEG_RE.sub(_strip_cue, line).strip()
+        line = TRAILING_CONTINUATION_RE.sub("", line).strip()
         if not line:
             continue
         cleaned_lines.append(line)
